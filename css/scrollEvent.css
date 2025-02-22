@@ -1,0 +1,10 @@
+#back-to-top{
+    display: none;
+    position: fixed;
+    z-index: 10;
+    right: 24px;
+    bottom: 40px;
+    border-radius: 100%;
+    border: none;
+    background-color: #11071F;
+}
