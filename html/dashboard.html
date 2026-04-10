@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Messages Dashboard ✿ — Somealea</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"/>
+  <style>
+    :root{
+      --peach:#ffb347;--peach2:#ff8c69;--coral:#ff6b6b;--rose:#ff4d7d;
+      --apricot:#ffd1a9;--blush:#ffc4c4;--lilac:#d4a8e0;--mint:#a8ddc0;
+      --bg:#fdf4ec;--surface:#ffffff;--surface2:#fff5eb;--cream2:#fff0e0;
+      --text:#3d2314;--text2:#7a4a2e;--muted:#b07a5a;
+      --border:rgba(255,140,105,0.2);--shadow:0 8px 32px rgba(255,140,105,0.14);
+      --green:#34d399;--red:#f87171;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px}
+    body{font-family:'Quicksand',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .bg-blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.32;animation:bd 14s ease-in-out infinite}
+    .b1{width:480px;height:480px;background:var(--apricot);top:-150px;left:-100px;animation-delay:0s}
+    .b2{width:360px;height:360px;background:var(--blush);bottom:10%;right:-80px;animation-delay:-5s}
+    @keyframes bd{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-35px)}}
+
+    /* LAYOUT */
+    .dash{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+
+    /* HEADER */
+    .dash-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem}
+    .head-left h1{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;margin-bottom:.3rem}
+    .head-left h1 span{background:linear-gradient(135deg,var(--coral),var(--peach));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .head-left p{color:var(--muted);font-size:.86rem}
+    .head-right{display:flex;gap:.7rem;flex-wrap:wrap}
+    .dash-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.2rem;border-radius:99px;font-weight:700;font-size:.82rem;cursor:pointer;border:none;font-family:'Quicksand',sans-serif;transition:all .22s}
+    .db-primary{background:linear-gradient(135deg,var(--peach2),var(--coral));color:#fff;box-shadow:0 6px 20px rgba(255,100,80,.28)}
+    .db-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,100,80,.38)}
+    .db-outline{background:var(--surface);color:var(--text2);border:1.5px solid var(--border)}
+    .db-outline:hover{border-color:var(--coral);color:var(--coral)}
+    .db-danger{background:var(--surface);color:var(--red);border:1.5px solid rgba(248,113,113,.3)}
+    .db-danger:hover{background:rgba(248,113,113,.08)}
+
+    /* STAT CARDS */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:1.4rem 1.3rem;box-shadow:var(--shadow);transition:transform .25s}
+    .stat-card:hover{transform:translateY(-4px)}
+    .sc-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+    .sc-num{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--coral);line-height:1}
+    .sc-sub{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+
+    /* FILTER BAR */
+    .filter-bar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1.5rem}
+    .filter-bar input{flex:1;min-width:200px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:.65rem 1rem;color:var(--text);font-family:'Quicksand',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s}
+    .filter-bar input:focus{border-color:var(--peach2)}
+    .filter-tabs{display:flex;gap:.4rem}
+    .ftab{padding:.4rem .85rem;border-radius:99px;font-size:.76rem;font-weight:800;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .2s}
+    .ftab.active{background:linear-gradient(135deg,var(--peach2),var(--coral));color:#fff;border-color:transparent}
+
+    /* MESSAGE LIST */
+    #msgList{display:flex;flex-direction:column;gap:1rem}
+    .msg-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:1.4rem 1.5rem;box-shadow:0 4px 18px rgba(255,140,105,.08);transition:transform .25s,box-shadow .25s;cursor:pointer;position:relative}
+    .msg-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(255,100,80,.13)}
+    .msg-card.unread{border-left:4px solid var(--coral)}
+    .msg-card.unread .mc-name::after{content:'NEW';font-size:.58rem;font-weight:800;background:var(--coral);color:#fff;padding:.1rem .4rem;border-radius:99px;margin-left:.5rem;vertical-align:middle}
+    .mc-row1{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem}
+    .mc-left{display:flex;align-items:center;gap:.85rem;flex:1}
+    .mc-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--apricot),var(--coral));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:1.1rem;color:#fff;flex-shrink:0}
+    .mc-name{font-weight:800;font-size:.96rem;color:var(--text)}
+    .mc-email{font-size:.78rem;color:var(--muted)}
+    .mc-right{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+    .mc-date{font-size:.72rem;color:var(--muted);font-family:'Nunito',monospace}
+    .mc-subject{font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:.4rem}
+    .mc-preview{font-size:.82rem;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .mc-expanded{display:none;margin-top:.9rem;padding-top:.9rem;border-top:1.5px solid var(--border)}
+    .mc-expanded.open{display:block}
+    .mc-full{font-size:.86rem;color:var(--text2);line-height:1.8}
+    .mc-actions{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap}
+    .act-btn{padding:.38rem .85rem;border-radius:99px;font-size:.75rem;font-weight:800;cursor:pointer;border:none;font-family:'Quicksand',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:.35rem}
+    .act-read{background:rgba(52,211,153,.12);color:#059669;border:1px solid rgba(52,211,153,.28)}
+    .act-read:hover{background:rgba(52,211,153,.2)}
+    .act-reply{background:rgba(255,140,105,.1);color:var(--coral);border:1px solid rgba(255,140,105,.28)}
+    .act-reply:hover{background:rgba(255,140,105,.18)}
+    .act-del{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.28)}
+    .act-del:hover{background:rgba(248,113,113,.18)}
+
+    /* EMPTY STATE */
+    .empty{text-align:center;padding:5rem 2rem;color:var(--muted)}
+    .empty-ico{font-size:4rem;margin-bottom:1rem;opacity:.5}
+    .empty h3{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:.5rem;color:var(--text2)}
+    .empty p{font-size:.88rem;line-height:1.7}
+
+    /* MODAL */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(61,35,20,.5);backdrop-filter:blur(6px);z-index:2000;align-items:center;justify-content:center;padding:1rem}
+    .modal-bg.open{display:flex}
+    .modal{background:var(--surface);border-radius:24px;padding:2rem;max-width:540px;width:100%;box-shadow:0 20px 60px rgba(255,100,80,.2);position:relative}
+    .modal h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:1rem;color:var(--text)}
+    .modal-body{font-size:.88rem;color:var(--text2);line-height:1.8}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);transition:color .2s}
+    .modal-close:hover{color:var(--coral)}
+    .modal-field{margin-bottom:.9rem}
+    .modal-field label{display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.3rem}
+    .modal-field p{font-size:.9rem;color:var(--text);background:var(--cream2);border-radius:10px;padding:.7rem .9rem;line-height:1.7}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,var(--peach2),var(--coral));color:#fff;padding:.7rem 1.6rem;border-radius:99px;font-weight:800;font-size:.86rem;box-shadow:0 8px 22px rgba(255,100,80,.32);z-index:9000;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
+    .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* BACK LINK */
+    .back-link{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.8rem;font-weight:700;text-decoration:none;margin-bottom:1.5rem;transition:color .2s}
+    .back-link:hover{color:var(--coral)}
+
+    @media(max-width:600px){
+      .dash{padding:1.5rem 1rem}
+      .dash-head{flex-direction:column;align-items:flex-start}
+      .stats{grid-template-columns:1fr 1fr}
+      .mc-row1{flex-direction:column;gap:.6rem}
+    }
+  </style>
+</head>
+<body>
+<div class="bg-blobs"><div class="blob b1"></div><div class="blob b2"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    <h3 id="modal-title">Message</h3>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="dash">
+  <a href="index.html" class="back-link"><i class="ri-arrow-left-line"></i> Back to Portfolio</a>
+
+  <div class="dash-head">
+    <div class="head-left">
+      <h1>Messages <span>Dashboard</span> ✿</h1>
+      <p>Contact form submissions from your portfolio visitors</p>
+    </div>
+    <div class="head-right">
+      <button class="dash-btn db-outline" onclick="markAllRead()"><i class="ri-check-double-line"></i> Mark All Read</button>
+      <button class="dash-btn db-primary" onclick="loadMessages()"><i class="ri-refresh-line"></i> Refresh</button>
+      <button class="dash-btn db-danger" onclick="clearAll()"><i class="ri-delete-bin-line"></i> Clear All</button>
+    </div>
+  </div>
+
+  <div class="stats" id="statsArea">
+    <div class="stat-card"><div class="sc-label"><i class="ri-mail-line"></i> Total</div><div class="sc-num" id="s-total">0</div><div class="sc-sub">messages received</div></div>
+    <div class="stat-card"><div class="sc-label"><i class="ri-mail-unread-line"></i> Unread</div><div class="sc-num" id="s-unread">0</div><div class="sc-sub">need your attention</div></div>
+    <div class="stat-card"><div class="sc-label"><i class="ri-calendar-line"></i> This Week</div><div class="sc-num" id="s-week">0</div><div class="sc-sub">new messages</div></div>
+    <div class="stat-card"><div class="sc-label"><i class="ri-user-line"></i> Unique</div><div class="sc-num" id="s-unique">0</div><div class="sc-sub">unique senders</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Search by name, email, or message..." oninput="filterMessages()"/>
+    <div class="filter-tabs">
+      <div class="ftab active" data-f="all" onclick="setFilter('all',this)">All</div>
+      <div class="ftab" data-f="unread" onclick="setFilter('unread',this)">Unread</div>
+      <div class="ftab" data-f="read" onclick="setFilter('read',this)">Read</div>
+    </div>
+  </div>
+
+  <div id="msgList"></div>
+</div>
+
+<script>
+let allMessages=[];
+let curFilter='all';
+
+function getMessages(){
+  try{return JSON.parse(localStorage.getItem('portfolio_contacts')||'[]');}
+  catch(e){return [];}
+}
+function saveMessages(msgs){
+  localStorage.setItem('portfolio_contacts',JSON.stringify(msgs));
+}
+
+function loadMessages(){
+  allMessages=getMessages();
+  updateStats();
+  renderMessages();
+}
+
+function updateStats(){
+  const now=new Date();
+  const weekAgo=new Date(now-7*24*60*60*1000);
+  document.getElementById('s-total').textContent=allMessages.length;
+  document.getElementById('s-unread').textContent=allMessages.filter(m=>!m.read).length;
+  document.getElementById('s-week').textContent=allMessages.filter(m=>new Date(m.date)>weekAgo).length;
+  document.getElementById('s-unique').textContent=new Set(allMessages.map(m=>m.email.toLowerCase())).size;
+}
+
+function setFilter(f,el){
+  curFilter=f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderMessages();
+}
+
+function filterMessages(){
+  renderMessages();
+}
+
+function renderMessages(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  let msgs=allMessages.filter(m=>{
+    if(curFilter==='unread'&&m.read) return false;
+    if(curFilter==='read'&&!m.read) return false;
+    if(q&&!(m.name.toLowerCase().includes(q)||m.email.toLowerCase().includes(q)||m.message.toLowerCase().includes(q)||m.subject.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const list=document.getElementById('msgList');
+  if(msgs.length===0){
+    list.innerHTML=`<div class="empty"><div class="empty-ico">💌</div><h3>No messages yet</h3><p>When someone submits your contact form,<br>their message will appear here.</p></div>`;
+    return;
+  }
+  list.innerHTML=msgs.map(m=>`
+    <div class="msg-card ${m.read?'':'unread'}" id="card-${m.id}">
+      <div class="mc-row1">
+        <div class="mc-left">
+          <div class="mc-avatar">${m.name.charAt(0).toUpperCase()}</div>
+          <div>
+            <div class="mc-name">${esc(m.name)}</div>
+            <div class="mc-email">${esc(m.email)}</div>
+          </div>
+        </div>
+        <div class="mc-right">
+          <div class="mc-date">${fmtDate(m.date)}</div>
+        </div>
+      </div>
+      <div class="mc-subject">📌 ${esc(m.subject)}</div>
+      <div class="mc-preview">${esc(m.message)}</div>
+      <div class="mc-expanded" id="exp-${m.id}">
+        <div class="mc-full">${esc(m.message).replace(/\n/g,'<br>')}</div>
+        <div class="mc-actions">
+          ${!m.read?`<button class="act-btn act-read" onclick="markRead('${m.id}',event)"><i class="ri-check-line"></i> Mark Read</button>`:'<span style="font-size:.75rem;color:var(--mint);font-weight:800;">✓ Read</span>'}
+          <button class="act-btn act-reply" onclick="replyTo('${m.email}','${esc(m.name)}',event)"><i class="ri-mail-send-line"></i> Reply</button>
+          <button class="act-btn act-del" onclick="deleteMsg('${m.id}',event)"><i class="ri-delete-bin-line"></i> Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // click to expand
+  document.querySelectorAll('.msg-card').forEach(card=>{
+    card.addEventListener('click',function(e){
+      if(e.target.closest('.act-btn')||e.target.closest('a')) return;
+      const id=this.id.replace('card-','');
+      const exp=document.getElementById('exp-'+id);
+      exp.classList.toggle('open');
+      if(exp.classList.contains('open')) markRead(id);
+    });
+  });
+}
+
+function markRead(id,e){
+  if(e){e.stopPropagation();}
+  allMessages=allMessages.map(m=>m.id===id?{...m,read:true}:m);
+  saveMessages(allMessages);
+  loadMessages();
+}
+
+function markAllRead(){
+  allMessages=allMessages.map(m=>({...m,read:true}));
+  saveMessages(allMessages);
+  loadMessages();
+  toast('All messages marked as read ✿');
+}
+
+function deleteMsg(id,e){
+  if(e) e.stopPropagation();
+  if(!confirm('Delete this message?')) return;
+  allMessages=allMessages.filter(m=>m.id!==id);
+  saveMessages(allMessages);
+  loadMessages();
+  toast('Message deleted');
+}
+
+function clearAll(){
+  if(!confirm('Delete ALL messages? This cannot be undone.')) return;
+  localStorage.removeItem('portfolio_contacts');
+  allMessages=[];
+  loadMessages();
+  toast('All messages cleared');
+}
+
+function replyTo(email,name,e){
+  if(e) e.stopPropagation();
+  window.open(`mailto:${email}?subject=Re: Your message — Him Somealea&body=Hi ${name},%0A%0A`);
+}
+
+function fmtDate(iso){
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),3000);
+}
+
+// Add some demo messages if empty (so dashboard looks useful on first open)
+function seedDemo(){
+  const existing=getMessages();
+  if(existing.length===0){
+    const demo=[
+      {id:'demo1',name:'Sokha Pich',email:'sokha@example.com',subject:'Freelance Project Inquiry',message:'Hi Somealea! I saw your portfolio and I\'m really impressed with the Dental Clinic System. I have a similar project for a medical clinic. Would you be available to discuss? Budget is flexible.',date:new Date(Date.now()-2*60*60*1000).toISOString(),read:false},
+      {id:'demo2',name:'Dara Nguon',email:'dara.nguon@company.kh',subject:'IT Officer Position',message:'Dear Somealea, we reviewed your application and would like to invite you for an interview next week. Please let us know your availability. Looking forward to meeting you!',date:new Date(Date.now()-18*60*60*1000).toISOString(),read:false},
+      {id:'demo3',name:'Ratana Kim',email:'ratanak@startup.io',subject:'Collaboration Opportunity',message:'Hey! I\'m working on a startup in Phnom Penh and we\'re looking for a front-end developer. Your Next.js skills are exactly what we need. Open to a quick call?',date:new Date(Date.now()-3*24*60*60*1000).toISOString(),read:true},
+    ];
+    saveMessages(demo);
+  }
+}
+
+seedDemo();
+loadMessages();
+</script>
+</body>
+</html>
